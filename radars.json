@@ -1,0 +1,42 @@
+[
+  {
+    "name": "Gdańsk - Stogi",
+    "town": "Gdańsk",
+    "lat": 54.3605,
+    "lon": 18.7189,
+    "type": "stacjonarny",
+    "note": ""
+  },
+  {
+    "name": "Gdynia - Morska",
+    "town": "Gdynia",
+    "lat": 54.5187,
+    "lon": 18.5312,
+    "type": "stacjonarny",
+    "note": ""
+  },
+  {
+    "name": "OPP 1",
+    "town": "Sopot",
+    "lat": 54.4410,
+    "lon": 18.5600,
+    "type": "opp_start",
+    "note": ""
+  },
+  {
+    "name": "OPP 1",
+    "town": "Sopot",
+    "lat": 54.4500,
+    "lon": 18.5700,
+    "type": "opp_end",
+    "note": ""
+  },
+  {
+    "name": "Redlight - Gdańsk",
+    "town": "Gdańsk",
+    "lat": 54.3700,
+    "lon": 18.6200,
+    "type": "redlight",
+    "note": ""
+  }
+]
