@@ -1,0 +1,167 @@
+[
+  /* ODCINKOWE POMIARY PRĘDKOŚCI (OPP) */
+
+  {
+    "name": "OPP – Borowo (DW211)",
+    "town": "Borowo",
+    "lat": 54.3312,
+    "lon": 18.2570,
+    "type": "opp_start",
+    "note": "Odcinek ok. 1.37 km"
+  },
+  {
+    "name": "OPP – Borowo (DW211)",
+    "town": "Borowo",
+    "lat": 54.3312,
+    "lon": 18.2570,
+    "type": "opp_end",
+    "note": "Odcinek ok. 1.37 km"
+  },
+
+  {
+    "name": "OPP – Borcz – Babi Dół (DK20)",
+    "town": "Borcz / Babi Dół",
+    "lat": 54.2965,
+    "lon": 18.2141,
+    "type": "opp_start",
+    "note": "Odcinek ok. 2.7 km"
+  },
+  {
+    "name": "OPP – Borcz – Babi Dół (DK20)",
+    "town": "Borcz / Babi Dół",
+    "lat": 54.2965,
+    "lon": 18.2141,
+    "type": "opp_end",
+    "note": "Odcinek ok. 2.7 km"
+  },
+
+  {
+    "name": "OPP – Reda – Rekowo Górne (DW216)",
+    "town": "Reda / Rekowo Górne",
+    "lat": 54.6183,
+    "lon": 18.4111,
+    "type": "opp_start",
+    "note": "Odcinek ok. 1.65 km"
+  },
+  {
+    "name": "OPP – Reda – Rekowo Górne (DW216)",
+    "town": "Reda / Rekowo Górne",
+    "lat": 54.6183,
+    "lon": 18.4111,
+    "type": "opp_end",
+    "note": "Odcinek ok. 1.65 km"
+  },
+
+  {
+    "name": "OPP – S6 Gdańsk Lotnisko – Park Gdańsk",
+    "town": "Gdańsk",
+    "lat": 54.3781,
+    "lon": 18.4905,
+    "type": "opp_start",
+    "note": "Odcinek ok. 3.8 km"
+  },
+  {
+    "name": "OPP – S6 Gdańsk Lotnisko – Park Gdańsk",
+    "town": "Gdańsk",
+    "lat": 54.3781,
+    "lon": 18.4905,
+    "type": "opp_end",
+    "note": "Odcinek ok. 3.8 km"
+  },
+
+  {
+    "name": "OPP – S6 Matarnia – Owczarnia",
+    "town": "Gdańsk / Owczarnia",
+    "lat": 54.3942,
+    "lon": 18.4721,
+    "type": "opp_start",
+    "note": ""
+  },
+  {
+    "name": "OPP – S6 Matarnia – Owczarnia",
+    "town": "Gdańsk / Owczarnia",
+    "lat": 54.3942,
+    "lon": 18.4721,
+    "type": "opp_end",
+    "note": ""
+  },
+
+  {
+    "name": "OPP – S7 Węzeł Dworek – Nowy Dwór Gdański",
+    "town": "Dworek / Nowy Dwór Gdański",
+    "lat": 54.2492,
+    "lon": 19.0114,
+    "type": "opp_start",
+    "note": ""
+  },
+  {
+    "name": "OPP – S7 Węzeł Dworek – Nowy Dwór Gdański",
+    "town": "Dworek / Nowy Dwór Gdański",
+    "lat": 54.2492,
+    "lon": 19.0114,
+    "type": "opp_end",
+    "note": ""
+  },
+
+  /* STACJONARNE FOTORADARY */
+
+  {
+    "name": "Waćmierek (DK22)",
+    "town": "Waćmierek",
+    "lat": 54.044435,
+    "lon": 18.703633,
+    "type": "stacjonarny",
+    "note": ""
+  },
+  {
+    "name": "Gdańsk – ul. Grunwaldzka",
+    "town": "Gdańsk",
+    "lat": 54.3821,
+    "lon": 18.5912,
+    "type": "stacjonarny",
+    "note": ""
+  },
+  {
+    "name": "Gdańsk – ul. Słowackiego",
+    "town": "Gdańsk",
+    "lat": 54.3789,
+    "lon": 18.5423,
+    "type": "stacjonarny",
+    "note": ""
+  },
+  {
+    "name": "Gdynia – ul. Morska",
+    "town": "Gdynia",
+    "lat": 54.5414,
+    "lon": 18.4725,
+    "type": "stacjonarny",
+    "note": ""
+  },
+  {
+    "name": "Słupsk – ul. Szczecińska",
+    "town": "Słupsk",
+    "lat": 54.4578,
+    "lon": 16.9942,
+    "type": "stacjonarny",
+    "note": ""
+  },
+  {
+    "name": "Wejherowo (DK6)",
+    "town": "Wejherowo",
+    "lat": 54.6061,
+    "lon": 18.2254,
+    "type": "stacjonarny",
+    "note": ""
+  },
+
+  /* RED-LIGHT */
+
+  {
+    "name": "Red-light – Gdańsk, ul. Grunwaldzka",
+    "town": "Gdańsk",
+    "lat": 54.3821,
+    "lon": 18.5912,
+    "type": "redlight",
+    "note": "Kontrola przejazdu na czerwonym świetle"
+  }
+]
