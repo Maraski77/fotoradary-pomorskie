@@ -2,53 +2,27 @@
 <html lang="pl">
 <head>
   <meta charset="utf-8" />
-  <title>Mapa fotoradarów – województwo pomorskie</title>
+  <title>Mapa fotoradarów – Pomorskie</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- Leaflet CSS + JS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
 
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    #map {
-      height: 100vh;
-      width: 100vw;
-    }
+    body { margin: 0; font-family: Arial; }
+    #map { height: 100vh; width: 100vw; }
     .panel {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: #fff;
-      padding: 10px;
-      border-radius: 6px;
+      position: absolute; top: 10px; left: 10px;
+      background: #fff; padding: 10px; border-radius: 6px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      z-index: 1000;
-      width: 260px;
-      max-height: 90vh;
-      overflow-y: auto;
-      font-size: 14px;
+      z-index: 1000; width: 260px; max-height: 90vh; overflow-y: auto;
     }
-    .panel input[type="text"] {
-      width: 100%;
-      padding: 6px;
-      margin-top: 6px;
-      box-sizing: border-box;
-    }
-    .results div {
-      padding: 4px;
-      cursor: pointer;
-    }
-    .results div:hover {
-      background: #eee;
-    }
-    #pieChart {
-      display: block;
-      margin: 8px auto;
+    #pieChart { display: block; margin: 8px auto; }
+    button {
+      width: 100%; padding: 8px; margin-top: 10px;
+      background: orange; border: none; color: #fff;
+      font-weight: bold; cursor: pointer; border-radius: 4px;
     }
   </style>
 </head>
@@ -65,7 +39,7 @@
   <label><input type="checkbox" id="heat" checked> Heatmap</label><br>
 
   <input id="search" type="text" placeholder="Szukaj (np. Gdańsk)">
-  <div class="results" id="results"></div>
+  <div id="results"></div>
 
   <h4>Statystyki</h4>
   <div id="stats"></div>
@@ -73,38 +47,36 @@
   <h4>Wykres kołowy</h4>
   <canvas id="pieChart" width="240" height="240"></canvas>
   <div id="pieLegend"></div>
+
+  <button id="startOPP">Start OPP</button>
 </div>
 
 <script>
 let radars = [];
+let oppPairs = [];
+let map;
 
-// Wczytanie danych z radars.json
-fetch('radars.json')
+// Wczytanie danych
+fetch("radars.json")
   .then(r => r.json())
-  .then(data => {
-    radars = data;
-    init();
-  });
+  .then(data => { radars = data; init(); });
 
-// Animacja OPP (przygotowana – możesz później podpiąć pod kliknięcia)
-function animateOPP(start, end, map) {
-  const duration = 3000; // 3 sekundy
+// Animacja OPP
+function animateOPP(start, end) {
+  const duration = 3000;
   const steps = 200;
+
   const latStep = (end.lat - start.lat) / steps;
   const lonStep = (end.lon - start.lon) / steps;
 
   const marker = L.circleMarker([start.lat, start.lon], {
-    radius: 6,
-    color: 'orange',
-    fillColor: 'orange',
-    fillOpacity: 0.9
+    radius: 6, color: "orange", fillColor: "orange", fillOpacity: 0.9
   }).addTo(map);
 
   let i = 0;
   const interval = setInterval(() => {
     marker.setLatLng([start.lat + latStep * i, start.lon + lonStep * i]);
     i++;
-
     if (i >= steps) {
       clearInterval(interval);
       setTimeout(() => map.removeLayer(marker), 500);
@@ -112,106 +84,89 @@ function animateOPP(start, end, map) {
   }, duration / steps);
 
   L.polyline([[start.lat, start.lon], [end.lat, end.lon]], {
-    color: 'orange',
-    weight: 4,
-    opacity: 0.7
+    color: "orange", weight: 4, opacity: 0.7
   }).addTo(map);
 }
 
 // Wykres kołowy
 function drawPieChart(stats) {
-  const canvas = document.getElementById('pieChart');
-  const ctx = canvas.getContext('2d');
-
+  const canvas = document.getElementById("pieChart");
+  const ctx = canvas.getContext("2d");
   const data = [
     { label: "Stacjonarne", value: stats.stacjonarne, color: "red" },
     { label: "OPP", value: stats.opp, color: "blue" },
     { label: "Red-light", value: stats.redlight, color: "green" }
   ];
-
-  const total = data.reduce((sum, d) => sum + d.value, 0);
+  const total = data.reduce((s, d) => s + d.value, 0);
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  if (total === 0) return;
-
   let startAngle = 0;
 
   data.forEach(d => {
-    const sliceAngle = (d.value / total) * 2 * Math.PI;
-
+    const slice = (d.value / total) * 2 * Math.PI;
     ctx.beginPath();
     ctx.moveTo(120, 120);
-    ctx.arc(120, 120, 100, startAngle, startAngle + sliceAngle);
+    ctx.arc(120, 120, 100, startAngle, startAngle + slice);
     ctx.closePath();
     ctx.fillStyle = d.color;
     ctx.fill();
-
-    startAngle += sliceAngle;
+    startAngle += slice;
   });
 
-  const legend = document.getElementById('pieLegend');
-  legend.innerHTML = data.map(d =>
-    `<div style="margin:4px;">
-       <span style="display:inline-block;width:12px;height:12px;background:${d.color};margin-right:6px;"></span>
-       ${d.label}: ${d.value}
-     </div>`
-  ).join("");
+  document.getElementById("pieLegend").innerHTML =
+    data.map(d => `<div><span style="display:inline-block;width:12px;height:12px;background:${d.color};margin-right:6px;"></span>${d.label}: ${d.value}</div>`).join("");
 }
 
 // Statystyki
 function updateStats() {
   const stats = {
     all: radars.length,
-    stacjonarne: radars.filter(r => r.type === 'stacjonarny').length,
-    opp: radars.filter(r => r.type === 'opp').length,
-    redlight: radars.filter(r => r.type === 'redlight').length
+    stacjonarne: radars.filter(r => r.type === "stacjonarny").length,
+    opp: radars.filter(r => r.type === "opp_start" || r.type === "opp_end").length,
+    redlight: radars.filter(r => r.type === "redlight").length
   };
-
-  document.getElementById('stats').innerHTML = `
-    <b>Wszystkie:</b> ${stats.all}<br>
-    <b>Stacjonarne:</b> ${stats.stacjonarne}<br>
-    <b>OPP:</b> ${stats.opp}<br>
-    <b>Red-light:</b> ${stats.redlight}
+  document.getElementById("stats").innerHTML = `
+    Wszystkie: ${stats.all}<br>
+    Stacjonarne: ${stats.stacjonarne}<br>
+    OPP: ${stats.opp}<br>
+    Red-light: ${stats.redlight}
   `;
-
   drawPieChart(stats);
 }
 
-// Główna inicjalizacja mapy
+// Inicjalizacja mapy
 function init() {
-  const map = L.map('map').setView([54.2, 18.6], 8);
+  map = L.map("map").setView([54.2, 18.6], 8);
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19
-  }).addTo(map);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
 
   const layerS = L.layerGroup().addTo(map);
   const layerO = L.layerGroup().addTo(map);
   const layerR = L.layerGroup().addTo(map);
 
   const heat = L.heatLayer(radars.map(r => [r.lat, r.lon, 0.8]), {
-    radius: 25,
-    blur: 15
+    radius: 25, blur: 15
   }).addTo(map);
 
   const icons = {
     stacjonarny: L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-      shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41]
+      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png",
+      shadowUrl: "https://unpkg.com/leaflet/dist/images/marker-shadow.png",
+      iconSize: [25, 41], iconAnchor: [12, 41]
     }),
-    opp: L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-      shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41]
+    opp_start: L.icon({
+      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+      shadowUrl: "https://unpkg.com/leaflet/dist/images/marker-shadow.png",
+      iconSize: [25, 41], iconAnchor: [12, 41]
+    }),
+    opp_end: L.icon({
+      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png",
+      shadowUrl: "https://unpkg.com/leaflet/dist/images/marker-shadow.png",
+      iconSize: [25, 41], iconAnchor: [12, 41]
     }),
     redlight: L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-      shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
-      iconSize: [25, 41],
-      iconAnchor: [12, 41]
+      iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png",
+      shadowUrl: "https://unpkg.com/leaflet/dist/images/marker-shadow.png",
+      iconSize: [25, 41], iconAnchor: [12, 41]
     })
   };
 
@@ -219,45 +174,29 @@ function init() {
 
   radars.forEach(r => {
     const marker = L.marker([r.lat, r.lon], { icon: icons[r.type] })
-      .bindPopup(`<b>${r.name}</b><br>${r.town}<br>${r.type}<br>${r.note || ''}`);
+      .bindPopup(`<b>${r.name}</b><br>${r.town}<br>${r.type}<br>${r.note || ""}`);
 
-    if (r.type === 'stacjonarny') marker.addTo(layerS);
-    if (r.type === 'opp') marker.addTo(layerO);
-    if (r.type === 'redlight') marker.addTo(layerR);
+    if (r.type === "stacjonarny") marker.addTo(layerS);
+    if (r.type === "opp_start" || r.type === "opp_end") marker.addTo(layerO);
+    if (r.type === "redlight") marker.addTo(layerR);
 
     markers.push({ radar: r, marker });
   });
 
-  document.getElementById('stacjonarne').onchange = e =>
-    e.target.checked ? map.addLayer(layerS) : map.removeLayer(layerS);
+  // Parowanie OPP
+  const starts = radars.filter(r => r.type === "opp_start");
+  const ends = radars.filter(r => r.type === "opp_end");
 
-  document.getElementById('opp').onchange = e =>
-    e.target.checked ? map.addLayer(layerO) : map.removeLayer(layerO);
+  starts.forEach(start => {
+    const end = ends.find(e => e.name === start.name);
+    if (end) oppPairs.push({ start, end });
+  });
 
-  document.getElementById('redlight').onchange = e =>
-    e.target.checked ? map.addLayer(layerR) : map.removeLayer(layerR);
-
-  document.getElementById('heat').onchange = e =>
-    e.target.checked ? map.addLayer(heat) : map.removeLayer(heat);
-
-  document.getElementById('search').oninput = e => {
-    const q = e.target.value.toLowerCase();
-    const res = document.getElementById('results');
-    res.innerHTML = '';
-
-    if (q.length < 2) return;
-
-    markers
-      .filter(m => (m.radar.name + m.radar.town).toLowerCase().includes(q))
-      .forEach(m => {
-        const div = document.createElement('div');
-        div.textContent = `${m.radar.name} – ${m.radar.town}`;
-        div.onclick = () => {
-          map.setView([m.radar.lat, m.radar.lon], 14);
-          m.marker.openPopup();
-        };
-        res.appendChild(div);
-      });
+  // Przycisk Start OPP
+  document.getElementById("startOPP").onclick = () => {
+    if (oppPairs.length > 0) {
+      animateOPP(oppPairs[0].start, oppPairs[0].end);
+    }
   };
 
   updateStats();
