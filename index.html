@@ -36,6 +36,9 @@
   <label><input type="checkbox" id="heat" checked> Heatmap</label><br>
 
   <input id="search" placeholder="Szukaj (np. Gdańsk)">
+  <h4>Statystyki</h4>
+<div id="stats"></div>
+
   <div class="results" id="results"></div>
 </div>
 
@@ -46,7 +49,23 @@ fetch('radars.json')
   .then(r => r.json())
   .then(data => {
     radars = data;
-    init();
+    init()updateStats();
+    function updateStats() {
+  const stats = {
+    all: radars.length,
+    stacjonarne: radars.filter(r => r.type === 'stacjonarny').length,
+    opp: radars.filter(r => r.type === 'opp').length,
+    redlight: radars.filter(r => r.type === 'redlight').length
+  };
+
+  document.getElementById('stats').innerHTML = `
+    <b>Wszystkie:</b> ${stats.all}<br>
+    <b>Stacjonarne:</b> ${stats.stacjonarne}<br>
+    <b>OPP:</b> ${stats.opp}<br>
+    <b>Red-light:</b> ${stats.redlight}
+  `;
+}
+
   });
 
 function init() {
