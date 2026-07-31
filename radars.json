@@ -79,25 +79,38 @@
     "lon": 18.650,
     "note": "Wylot na S7"
   },
+
+  /* ============================
+     ODCINKOWY POMIAR PRĘDKOŚCI
+     ============================ */
+
   {
-    "name": "OPP S6 – Matarnia (start)",
+    "name": "OPP S6 – Matarnia",
     "town": "Gdańsk",
-    "type": "opp",
+    "type": "opp_start",
     "lat": 54.380,
-    "lon": 18.450
+    "lon": 18.450,
+    "note": "Początek odcinkowego pomiaru prędkości"
   },
   {
-    "name": "OPP S6 – Matarnia (koniec)",
+    "name": "OPP S6 – Matarnia",
     "town": "Gdańsk",
-    "type": "opp",
+    "type": "opp_end",
     "lat": 54.400,
-    "lon": 18.420
+    "lon": 18.420,
+    "note": "Koniec odcinkowego pomiaru prędkości"
   },
+
+  /* ============================
+     RED-LIGHT
+     ============================ */
+
   {
     "name": "Red-light – Grunwaldzka",
     "town": "Gdańsk",
     "type": "redlight",
     "lat": 54.380,
-    "lon": 18.600
+    "lon": 18.600,
+    "note": "Kontrola przejazdu na czerwonym świetle"
   }
 ]
