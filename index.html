@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <title>Mapa fotoradarów – województwo pomorskie</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <!-- Leaflet.heat (heatmap) -->
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    #map {
+      height: 100vh;
+      width: 100vw;
+    }
+    .control-panel {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 10px 12px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      font-size: 14px;
+      max-width: 280px;
+    }
+    .control-panel h3 {
+      margin: 0 0 8px 0;
+      font-size: 15px;
+    }
+    .control-panel label {
+      display: block;
+      margin-bottom: 4px;
+      cursor: pointer;
+    }
+    .search-box {
+      margin-top: 8px;
+    }
+    .search-box input {
+      width: 100%;
+      padding: 6px 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 13px;
+    }
+    .search-result {
+      margin-top: 6px;
+      max-height: 140px;
+      overflow-y: auto;
+      font-size: 13px;
+    }
+    .search-result div {
+      padding: 4px 2px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
+    .search-result div:hover {
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<div class="control-panel">
+  <h3>Fotoradary – Pomorskie</h3>
+
+  <div>
+    <label>
+      <input type="checkbox" id="layer-stacjonarne" checked>
+      Stacjonarne
+    </label>
+    <label>
+      <input type="checkbox" id="layer-opp" checked>
+      Odcinkowy pomiar prędkości (OPP)
+    </label>
+    <label>
+      <input type="checkbox" id="layer-redlight" checked>
+      Red-light (czerwone światło)
+    </label>
+    <label>
+      <input type="checkbox" id="layer-heatmap" checked>
+      Heatmap (zagęszczenie)
+    </label>
+  </div>
+
+  <div class="search-box">
+    <label for="search-input">Szukaj (ulica / miejscowość):</label>
+    <input type="text" id="search-input" placeholder="np. Gdańsk, Armii Krajowej">
+    <div id="search-result" class="search-result"></div>
+  </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+// =========================
+// Wczytanie danych z radars.json
+// =========================
+
+var radars = [];
+
+function initMap() {
+  // Inicjalizacja mapy
+  var map = L.map('map').setView([54.2, 18.6], 8);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+  }).addTo(map);
+
+  // Warstwy
+  var layerStacjonarne = L.layerGroup().addTo(map);
+  var layerOPP = L.layerGroup().addTo(map);
+  var layerRedLight = L.layerGroup().addTo(map);
+
+  // Heatmap
+  var heatPoints = radars.map(function(r) {
+    return [r.lat, r.lon, 0.8]; // lat, lon, intensywność
+  });
+  var heatLayer = L.heatLayer(heatPoints, {
+    radius: 25,
+    blur: 15,
+    maxZoom: 12
+  }).addTo(map);
+
+  // Ikony
+  var iconStacjonarny = L.icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+    shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  });
+
+  var iconOPP = L.icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+    shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  });
+
+  var iconRedLight = L.icon({
+    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
+    shadowUrl: 'https://unpkg.com/leaflet/dist/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
+  });
+
+  // Dodawanie markerów
+  var allMarkers = [];
+
+  radars.forEach(function(radar) {
+    var icon;
+    var targetLayer;
+
+    if (radar.type === 'stacjonarny') {
+      icon = iconStacjonarny;
+      targetLayer = layerStacjonarne;
+    } else if (radar.type === 'opp') {
+      icon = iconOPP;
+      targetLayer = layerOPP;
+    } else if (radar.type === 'redlight') {
+      icon = iconRedLight;
+      targetLayer = layerRedLight;
+    } else {
+      icon = iconStacjonarny;
+      targetLayer = layerStacjonarne;
+    }
+
+    var marker = L.marker([radar.lat, radar.lon], { icon: icon })
+      .bindPopup(
+        "<b>" + radar.name + "</b><br>" +
+        "Miejscowość: " + radar.town + "<br>" +
+        "Typ: " + radar.type + "<br>" +
+        (radar.note ? ("<small>" + radar.note + "</small>") : "")
+      );
+
+    marker.addTo(targetLayer);
+
+    allMarkers.push({
+      radar: radar,
+      marker: marker
+    });
+  });
+
+  // Sterowanie warstwami
+  var checkboxStacjonarne = document.getElementById('layer-stacjonarne');
+  var checkboxOPP = document.getElementById('layer-opp');
+  var checkboxRedLight = document.getElementById('layer-redlight');
+  var checkboxHeatmap = document.getElementById('layer-heatmap');
+
+  checkboxStacjonarne.addEventListener('change', function() {
+    if (this.checked) {
+      map.addLayer(layerStacjonarne);
+    } else {
+      map.removeLayer(layerStacjonarne);
+    }
+  });
+
+  checkboxOPP.addEventListener('change', function() {
+    if (this.checked) {
+      map.addLayer(layerOPP);
+    } else {
+      map.removeLayer(layerOPP);
+    }
+  });
+
+  checkboxRedLight.addEventListener('change', function() {
+    if (this.checked) {
+      map.addLayer(layerRedLight);
+    } else {
+      map.removeLayer(layerRedLight);
+    }
+  });
+
+  checkboxHeatmap.addEventListener('change', function() {
+    if (this.checked) {
+      map.addLayer(heatLayer);
+    } else {
+      map.removeLayer(heatLayer);
+    }
+  });
+
+  // Wyszukiwanie
+  var searchInput = document.getElementById('search-input');
+  var searchResult = document.getElementById('search-result');
+
+  searchInput.addEventListener('input', function() {
+    var query = this.value.trim().toLowerCase();
+    searchResult.innerHTML = '';
+
+    if (query.length < 2) {
+      return;
+    }
+
+    var matches = allMarkers.filter(function(item) {
+      var r = item.radar;
+      var text = (r.name + " " + r.town + " " + (r.note || "")).toLowerCase();
+      return text.indexOf(query) !== -1;
+    });
+
+    if (matches.length === 0) {
+      searchResult.innerHTML = '<div>Brak wyników…</div>';
+      return;
+    }
+
+    matches.forEach(function(item) {
+      var r = item.radar;
+      var div = document.createElement('div');
+      div.textContent = r.name + " – " + r.town + " (" + r.type + ")";
+      div.addEventListener('click', function() {
+        map.setView([r.lat, r.lon], 14);
+        item.marker.openPopup();
+      });
+      searchResult.appendChild(div);
+    });
+  });
+}
+
+// Pobranie JSON i start
+fetch('radars.json')
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    radars = data;
+    initMap();
+  })
+  .catch(function(err) {
+    console.error('Błąd wczytywania radars.json:', err);
+    alert('Nie udało się wczytać danych fotoradarów (radars.json).');
+  });
+
+</script>
+
+</body>
+</html>
